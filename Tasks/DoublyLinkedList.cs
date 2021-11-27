@@ -23,11 +23,6 @@ namespace Tasks
         private Node<T> _tail;
         private int _length;
 
-        public DoublyLinkedList()
-        {
-            _head = _tail = new Node<T>(default);
-        }
-
         public int Length => _length;
 
         private bool IsEmpty()
@@ -35,12 +30,23 @@ namespace Tasks
             return _head == null;
         }
 
+        public void Print()
+        {
+            var runner = _head;
+
+            while(runner != null)
+            {
+                Console.WriteLine(runner._data);
+                runner = runner._next;
+            }
+        }
+
         public void Add(T e)
         {
             var node = new Node<T>(e);
 
             if (IsEmpty())
-                _head = _tail = node;
+                Initialize(node);
             else
             {
                 _tail._next = node;
@@ -51,14 +57,76 @@ namespace Tasks
             _length++;
         }
 
+        private void Initialize(Node<T> node)
+        {
+            _head = _tail = node;
+        }
+
         public void AddAt(int index, T e)
         {
-            throw new NotImplementedException();
+            if (index >= _length || index < 0)
+                throw new IndexOutOfRangeException();
+
+            var node = new Node<T>(e);
+
+            if (IsEmpty())
+            {
+                Initialize(node);
+                _length++;
+                return;
+            }
+
+            if (index == 0)
+            {
+                AddFirst(node);
+                _length++;
+                return;
+            }
+
+            if(index == (_length - 1))
+            {
+                AddLast(node);
+                _length++;
+                return;
+            }
+
+            var runner = _head;
+
+            while(index-- > 0)
+                runner = runner._next;
+
+            var prev = runner._prev;
+            prev._next = node;
+            node._next = runner;
+            node._prev = prev;
+            _length++;
+        }
+
+        private void AddFirst(Node<T> node)
+        {
+            node._next = _head;
+            _head._prev = node;
+            _head = node;
+        }
+
+        private void AddLast(Node<T> node)
+        {
+            _tail._prev._next = node;
+            node._prev = _tail._prev;
+            _tail._prev = node;
+            node._next = _tail;
         }
 
         public T ElementAt(int index)
         {
-            throw new NotImplementedException();
+            if (index >= _length || index < 0)
+                throw new IndexOutOfRangeException();
+
+            var runner = _head;
+            while (index-- > 0)
+                runner = runner._next;
+
+            return runner._data;
         }
 
         public IEnumerator<T> GetEnumerator()
