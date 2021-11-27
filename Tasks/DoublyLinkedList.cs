@@ -5,7 +5,7 @@ using Tasks.DoNotChange;
 
 namespace Tasks
 {
-    public class DoublyLinkedList<T> : IDoublyLinkedList<T>
+    public class DoublyLinkedList<T> : IDoublyLinkedList<T>, IEnumerator<T>
     {
         private class Node<T>
         {
@@ -21,9 +21,15 @@ namespace Tasks
 
         private Node<T> _head;
         private Node<T> _tail;
+        private Node<T> _runner;
+        private Node<T> _mover;
         private int _length;
 
         public int Length => _length;
+
+        public T Current => _mover._data;
+
+        object IEnumerator.Current => _mover._data;
 
         private bool IsEmpty()
         {
@@ -59,12 +65,12 @@ namespace Tasks
 
         private void Initialize(Node<T> node)
         {
-            _head = _tail = node;
+            _mover = _runner = _head = _tail = node;
         }
 
         public void AddAt(int index, T e)
         {
-            if (index >= _length || index < 0)
+            if (index > _length || index < 0)
                 throw new IndexOutOfRangeException();
 
             var node = new Node<T>(e);
@@ -83,7 +89,7 @@ namespace Tasks
                 return;
             }
 
-            if(index == (_length - 1))
+            if(index == _length)
             {
                 AddLast(node);
                 _length++;
@@ -106,15 +112,14 @@ namespace Tasks
         {
             node._next = _head;
             _head._prev = node;
-            _head = node;
+            _mover = _runner = _head = node;
         }
 
         private void AddLast(Node<T> node)
         {
-            _tail._prev._next = node;
-            node._prev = _tail._prev;
-            _tail._prev = node;
-            node._next = _tail;
+            _tail._next = node;
+            node._prev = _tail;
+            _tail = node;
         }
 
         public T ElementAt(int index)
@@ -129,24 +134,108 @@ namespace Tasks
             return runner._data;
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
         public void Remove(T item)
         {
-            throw new NotImplementedException();
+            var runner = _head;
+            while(runner != null)
+            {
+                if (item.Equals(runner._data))
+                    break;
+
+                runner = runner._next;
+            }
+
+            if (runner == null)
+                return;
+
+            if (runner._prev == null)
+            {
+                RemoveFirst();
+                _length--;
+                return;
+            }
+
+            if (runner._next == null)
+            {
+                RemoveLast();
+                _length--;
+                return;
+            }
+
+            runner._prev._next = runner._next;
+            runner._next._prev = runner._prev;
+            _length--;
+        }
+
+        private T RemoveFirst()
+        {
+            var value = _head._data;
+            _mover = _runner = _head = _head._next;
+            _mover._prev = _runner._prev = _head._prev = null;
+            return value;
+        }
+
+        private T RemoveLast()
+        {
+            var value = _tail._data;
+            _tail = _tail._prev;
+            _tail._next = null;
+            return value;
         }
 
         public T RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            if (index >= _length || index < 0)
+                throw new IndexOutOfRangeException();
+
+            if(index == 0)
+            {
+                _length--;
+                return RemoveFirst();                
+            }
+
+            if(index == (_length - 1))
+            {
+                _length--;
+                return RemoveLast();
+            }
+
+            var runner = _head;
+            while (index-- > 0)
+                runner = runner._next;
+
+            runner._prev._next = runner._next;
+            runner._next._prev = runner._prev;
+            _length--;
+            return runner._data;
+        }
+
+        public bool MoveNext()
+        {
+            _mover = _runner;
+            if (_mover == null) return false;
+            _runner = _runner._next;
+            return (_mover != null);
+        }
+
+        public void Reset()
+        {
+            _mover = _runner = _head;
+        }
+
+        public void Dispose()
+        {
+            _mover = _runner = _head;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return this;
         }
     }
 }
