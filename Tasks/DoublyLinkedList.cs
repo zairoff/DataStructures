@@ -7,11 +7,48 @@ namespace Tasks
 {
     public class DoublyLinkedList<T> : IDoublyLinkedList<T>
     {
-        public int Length => throw new NotImplementedException();
+        private class Node<T>
+        {
+            public T _data;
+            public Node<T> _prev;
+            public Node<T> _next;
+
+            public Node(T data)
+            {
+                _data = data;
+            }
+        }
+
+        private Node<T> _head;
+        private Node<T> _tail;
+        private int _length;
+
+        public DoublyLinkedList()
+        {
+            _head = _tail = new Node<T>(default);
+        }
+
+        public int Length => _length;
+
+        private bool IsEmpty()
+        {
+            return _head == null;
+        }
 
         public void Add(T e)
         {
-            throw new NotImplementedException();
+            var node = new Node<T>(e);
+
+            if (IsEmpty())
+                _head = _tail = node;
+            else
+            {
+                _tail._next = node;
+                node._prev = _tail;
+                _tail = node;
+            }
+
+            _length++;
         }
 
         public void AddAt(int index, T e)

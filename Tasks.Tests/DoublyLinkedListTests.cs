@@ -9,9 +9,11 @@ namespace Tasks.Tests
         [Fact]
         public void Should_Increment_Length_Of_The_List_When_Element_Added()
         {
-            var list = new DoublyLinkedList<int>();
-            list.Add(1);
-            list.Add(2);
+            var list = new DoublyLinkedList<int>
+            {
+                1,
+                2
+            };
 
             var actualLength = list.Length;
 
